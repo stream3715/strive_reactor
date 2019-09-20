@@ -3,6 +3,8 @@
 #include <BLEUtils.h>
 #include <BLEServer.h>
 
+#include "command_parser.h"
+
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
 
@@ -16,7 +18,7 @@ class MyCallbacks : public BLECharacteristicCallbacks
     void onWrite(BLECharacteristic *pCharacteristic)
     {
         String value = String(pCharacteristic->getValue().c_str());
-        Serial.println(value);
+
     }
 };
 
@@ -24,7 +26,7 @@ void setup()
 {
     Serial.begin(115200); // Status message will be sent to PC at 9600 baud
 
-    BLEDevice::init("S-T-R-I-V-E Reactor");
+    BLEDevice::init("STRIVE Reactor");
     BLEServer *pServer = BLEDevice::createServer();
     BLEService *pService = pServer->createService(SERVICE_UUID);
     BLECharacteristic *pCharacteristic = pService->createCharacteristic(
@@ -37,6 +39,7 @@ void setup()
     BLEAdvertising *pAdvertising = pServer->getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->start();
+    Serial.println("S-T-R-I-V-E Reactor boot...");
 }
 
 //+=============================================================================
