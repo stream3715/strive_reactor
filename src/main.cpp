@@ -39,7 +39,7 @@ void setup()
     BLEAdvertising *pAdvertising = pServer->getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->start();
-    Serial.println("S-T-R-I-V-E Reactor boot...");
+    Serial.println("STRIVE Reactor boot...");
 }
 
 //+=============================================================================
