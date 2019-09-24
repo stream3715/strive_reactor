@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include "freertos/task.h"
+#include <Adafruit_NeoPixel.h>
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
@@ -6,8 +8,6 @@
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
 
-#include "freertos/task.h"
-#include <Adafruit_NeoPixel.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -26,17 +26,6 @@
 #define SERVICE_UUID "2b4c01cd-3d7f-42ba-8183-9d65e2bf8700"
 #define CHARACTERISTIC_UUID "212cc8ed-9198-47ac-9e35-1111d7efee90"
 
-bool stateChanged = false;
-
-class MyCallbacks : public BLECharacteristicCallbacks
-{
-    void onWrite(BLECharacteristic *pCharacteristic)
-    {
-        buf = state;
-        state = pCharacteristic->getValue().c_str()[0];
-    }
-};
-
 TaskHandle_t taskHandle_main, taskHandle_bl;
 
 char state = 'N', buf = '0';
@@ -46,6 +35,15 @@ Adafruit_NeoPixel strip_chest = Adafruit_NeoPixel(NUM_CHEST, PIN_CHEST, NEO_GRB 
 Adafruit_NeoPixel strip_left = Adafruit_NeoPixel(NUM_LEFT, PIN_LEFT, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip_right = Adafruit_NeoPixel(NUM_RIGHT, PIN_RIGHT, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip_center = Adafruit_NeoPixel(NUM_CENTER, PIN_CENTER, NEO_GRB + NEO_KHZ800);
+
+class MyCallbacks : public BLECharacteristicCallbacks
+{
+    void onWrite(BLECharacteristic *pCharacteristic)
+    {
+        buf = state;
+        state = pCharacteristic->getValue().c_str()[0];
+    }
+};
 
 void setup()
 {
@@ -187,7 +185,6 @@ void mainloop(void *arg)
                 strip_chest.setPixelColor(i + 16 % NUM_CHEST, 0, 255, 0);
                 strip_chest.setPixelColor(i + 17 % NUM_CHEST, 0, 255, 0);
                 strip_chest.setPixelColor(i + 18 % NUM_CHEST, 0, 255, 0);
-                strip_chest.setPixelColor(NUM_CHEST - 1, 0, 255, 0);
                 strip_chest.setPixelColor((i + 13 % NUM_CHEST) - 2, 0, 0, 0);
                 strip_chest.show();
                 delay(15);
