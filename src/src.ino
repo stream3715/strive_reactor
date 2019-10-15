@@ -8,7 +8,6 @@
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
 
-
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
@@ -26,7 +25,7 @@
 #define SERVICE_UUID "2b4c01cd-3d7f-42ba-8183-9d65e2bf8700"
 #define CHARACTERISTIC_UUID "212cc8ed-9198-47ac-9e35-1111d7efee90"
 
-TaskHandle_t taskHandle_main, taskHandle_bl;
+//TaskHandle_t taskHandle_main, taskHandle_bl;
 
 char state = 'N', buf = '0';
 
@@ -49,6 +48,7 @@ void setup()
 {
     // put your setup code here, to run once:
     Serial.begin(115200); // Status message will be sent to PC at 9600 baud
+    Serial.println("STRIVE Reactor booting...");
 
     BLEDevice::init("STRIVE Reactor");
     BLEServer *pServer = BLEDevice::createServer();
@@ -63,7 +63,6 @@ void setup()
     BLEAdvertising *pAdvertising = pServer->getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->start();
-    Serial.println("STRIVE Reactor booting...");
 
     strip_chest.begin();
     strip_left.begin();
@@ -75,11 +74,10 @@ void setup()
     strip_center.show();
     strip_right.show();
 
-    xTaskCreatePinnedToCore(mainloop, "task_main", 4096, NULL, 10, &taskHandle_main, 1);
-    xTaskCreatePinnedToCore(task, "task_bl", 4096, NULL, 5, &taskHandle_bl, 0);
-    Serial.printf("%s\n", "done");
+    //xTaskCreatePinnedToCore(mainloop, "task_main", 4096, NULL, 10, &taskHandle_main, 1);
+    //xTaskCreatePinnedToCore(task, "task_bl", 4096, NULL, 5, &taskHandle_bl, 0);
+    Serial.println("done");
 }
-void loop() {}
 
 void setBack(int r, int g, int b)
 {
@@ -117,227 +115,211 @@ void setcenter(int r, int g, int b)
     strip_center.show();
 }
 
-void mainloop(void *arg)
+void loop()
 {
-    while (1)
+    delay(5);
+    switch (state)
     {
-        delay(1);
-        switch (state)
-        {
-        case '1':
-        {
-            rainbowCycle(1);
-            break;
-        }
-
-        case '2':
-        {
-            rainbow(5);
-            break;
-        }
-
-        case '3':
-        {
-            int cnt = 0;
-            while (cnt <= 255)
-            {
-                for (int i = 0; i < NUM_CHEST; i++)
-                {
-                    strip_chest.setPixelColor(i, cnt, 0, 0);
-                }
-                strip_chest.show();
-                cnt += 4;
-                delay(1.47);
-            }
-            delay(310);
-
-            while (cnt >= 0)
-            {
-                for (int i = 0; i < NUM_CHEST; i++)
-                {
-                    strip_chest.setPixelColor(i, cnt, 0, 0);
-                }
-                strip_chest.show();
-                cnt -= 4;
-                delay(2);
-            }
-            cnt = 0;
-            for (int i = 0; i < NUM_CHEST; i++)
-            {
-                strip_chest.setPixelColor(i, 0, 0, 0);
-            }
-            strip_chest.show();
-            delay(500);
-            break;
-        }
-
-        case '4':
-        {
-            strip_chest.setPixelColor(NUM_CHEST - 1, 0, 255, 0);
-            for (int i = 0; i < NUM_CHEST; i++)
-            {
-                for (size_t i = 0; i < NUM_CHEST; i++)
-                {
-                    strip_chest.setPixelColor(i, 0, 0, 0);
-                }
-                strip_chest.setPixelColor(i + 14 % NUM_CHEST, 0, 255, 0);
-                strip_chest.setPixelColor(i + 15 % NUM_CHEST, 0, 255, 0);
-                strip_chest.setPixelColor(i + 16 % NUM_CHEST, 0, 255, 0);
-                strip_chest.setPixelColor(i + 17 % NUM_CHEST, 0, 255, 0);
-                strip_chest.setPixelColor(i + 18 % NUM_CHEST, 0, 255, 0);
-                strip_chest.setPixelColor((i + 13 % NUM_CHEST) - 2, 0, 0, 0);
-                strip_chest.show();
-                delay(15);
-            }
-            break;
-        }
-
-        case 'W':
-        {
-            for (int i = 0; i < NUM_CHEST; i++)
-            {
-                strip_chest.setPixelColor(i, 255, 255, 255);
-            }
-            strip_chest.show();
-            state = '0';
-            break;
-        }
-
-        case 'N':
-        {
-            for (int i = 0; i < NUM_CHEST; i++)
-            {
-                strip_chest.setPixelColor(i, 0, 0, 0);
-            }
-            strip_chest.show();
-            state = '0';
-            break;
-        }
-
-        case 'G':
-        {
-            for (int i = 0; i < NUM_CHEST; i++)
-            {
-                strip_chest.setPixelColor(i, 0, 255, 0);
-            }
-            strip_chest.show();
-            state = '0';
-            break;
-        }
-
-        case 'R':
-        {
-            for (int i = 0; i < NUM_CHEST; i++)
-            {
-                strip_chest.setPixelColor(i, 255, 0, 0);
-            }
-            strip_chest.show();
-            state = '0';
-            break;
-        }
-
-        case 'B':
-        {
-            for (int i = 0; i < NUM_CHEST; i++)
-            {
-                strip_chest.setPixelColor(i, 0, 0, 255);
-            }
-            strip_chest.show();
-            state = '0';
-            break;
-        }
-
-        case 'Y':
-        {
-            for (int i = 0; i < NUM_CHEST; i++)
-            {
-                strip_chest.setPixelColor(i, 255, 255, 0);
-            }
-            strip_chest.show();
-            state = '0';
-            break;
-        }
-
-        case 'S':
-        {
-            stoprainbow();
-            state = '0';
-            break;
-        }
-
-        case 'w':
-        {
-            setBack(255, 255, 255);
-            state = buf;
-            break;
-        }
-
-        case 'r':
-        {
-            setBack(255, 0, 0);
-            state = buf;
-            break;
-        }
-
-        case 'g':
-        {
-            setBack(0, 255, 0);
-            state = buf;
-            break;
-        }
-
-        case 'b':
-        {
-            setBack(0, 0, 255);
-            state = buf;
-            break;
-        }
-
-        case 'y':
-        {
-            setBack(255, 255, 0);
-            state = buf;
-            break;
-        }
-
-        case 'v':
-        {
-            setBack(255, 0, 255);
-            state = buf;
-            break;
-        }
-
-        case 'n':
-        {
-            setBack(0, 0, 0);
-            state = buf;
-            break;
-        }
-
-        case 'd':
-        {
-            ESP.restart();
-            break;
-        }
-
-        default:
-        {
-            break;
-        }
-        }
+    case '1':
+    {
+        rainbowCycle(1);
+        break;
     }
-}
 
-void task(void *arg)
-{
-    Serial.printf("%s\n", "into task");
-    while (1)
+    case '2':
     {
-        delay(1);
-        if (Serial.available())
+        rainbow(5);
+        break;
+    }
+
+    case '3':
+    {
+        int cnt = 0;
+        while (cnt <= 255)
         {
-            state = Serial.read();
+            for (int i = 0; i < NUM_CHEST; i++)
+            {
+                strip_chest.setPixelColor(i, cnt, 0, 0);
+            }
+            strip_chest.show();
+            cnt += 4;
+            delay(1.47);
         }
+        delay(310);
+
+        while (cnt >= 0)
+        {
+            for (int i = 0; i < NUM_CHEST; i++)
+            {
+                strip_chest.setPixelColor(i, cnt, 0, 0);
+            }
+            strip_chest.show();
+            cnt -= 4;
+            delay(2);
+        }
+        cnt = 0;
+        for (int i = 0; i < NUM_CHEST; i++)
+        {
+            strip_chest.setPixelColor(i, 0, 0, 0);
+        }
+        strip_chest.show();
+        delay(500);
+        break;
+    }
+
+    case '4':
+    {
+        strip_chest.setPixelColor(NUM_CHEST - 1, 0, 255, 0);
+        for (int i = 0; i < NUM_CHEST; i++)
+        {
+            for (size_t i = 0; i < NUM_CHEST; i++)
+            {
+                strip_chest.setPixelColor(i, 0, 0, 0);
+            }
+            strip_chest.setPixelColor(i + 14 % NUM_CHEST, 0, 255, 0);
+            strip_chest.setPixelColor(i + 15 % NUM_CHEST, 0, 255, 0);
+            strip_chest.setPixelColor(i + 16 % NUM_CHEST, 0, 255, 0);
+            strip_chest.setPixelColor(i + 17 % NUM_CHEST, 0, 255, 0);
+            strip_chest.setPixelColor(i + 18 % NUM_CHEST, 0, 255, 0);
+            strip_chest.setPixelColor((i + 13 % NUM_CHEST) - 2, 0, 0, 0);
+            strip_chest.show();
+            delay(15);
+        }
+        break;
+    }
+
+    case 'W':
+    {
+        for (int i = 0; i < NUM_CHEST; i++)
+        {
+            strip_chest.setPixelColor(i, 255, 255, 255);
+        }
+        strip_chest.show();
+        state = '0';
+        break;
+    }
+
+    case 'N':
+    {
+        for (int i = 0; i < NUM_CHEST; i++)
+        {
+            strip_chest.setPixelColor(i, 0, 0, 0);
+        }
+        strip_chest.show();
+        state = '0';
+        break;
+    }
+
+    case 'G':
+    {
+        for (int i = 0; i < NUM_CHEST; i++)
+        {
+            strip_chest.setPixelColor(i, 0, 255, 0);
+        }
+        strip_chest.show();
+        state = '0';
+        break;
+    }
+
+    case 'R':
+    {
+        for (int i = 0; i < NUM_CHEST; i++)
+        {
+            strip_chest.setPixelColor(i, 255, 0, 0);
+        }
+        strip_chest.show();
+        state = '0';
+        break;
+    }
+
+    case 'B':
+    {
+        for (int i = 0; i < NUM_CHEST; i++)
+        {
+            strip_chest.setPixelColor(i, 0, 0, 255);
+        }
+        strip_chest.show();
+        state = '0';
+        break;
+    }
+
+    case 'Y':
+    {
+        for (int i = 0; i < NUM_CHEST; i++)
+        {
+            strip_chest.setPixelColor(i, 255, 255, 0);
+        }
+        strip_chest.show();
+        state = '0';
+        break;
+    }
+
+    case 'S':
+    {
+        stoprainbow();
+        state = '0';
+        break;
+    }
+
+    case 'w':
+    {
+        setBack(255, 255, 255);
+        state = buf;
+        break;
+    }
+
+    case 'r':
+    {
+        setBack(255, 0, 0);
+        state = buf;
+        break;
+    }
+
+    case 'g':
+    {
+        setBack(0, 255, 0);
+        state = buf;
+        break;
+    }
+
+    case 'b':
+    {
+        setBack(0, 0, 255);
+        state = buf;
+        break;
+    }
+
+    case 'y':
+    {
+        setBack(255, 255, 0);
+        state = buf;
+        break;
+    }
+
+    case 'v':
+    {
+        setBack(255, 0, 255);
+        state = buf;
+        break;
+    }
+
+    case 'n':
+    {
+        setBack(0, 0, 0);
+        state = buf;
+        break;
+    }
+
+    case 'd':
+    {
+        ESP.restart();
+        break;
+    }
+
+    default:
+    {
+        break;
+    }
     }
 }
 
